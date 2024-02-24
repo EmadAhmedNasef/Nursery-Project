@@ -10,4 +10,8 @@ router.route("/teachers/:id").get(teacherController.getSpecifiTeacher)
                              .delete(teacherController.removeTeacher)
                              .patch(teacherController.updateTeacher);
 
+
+router.patch('/teachers/:id/changePassword', teacherController.changeTeacherPassword);
+
+
 module.exports = router;

@@ -1,10 +1,13 @@
 
+
 const express = require("express");
 const morgan = require("morgan");
+const swaggerUi = require("swagger-ui-express");
 
-const adminRouter = require('./routes/adminRoute');
-const teacherRouter = require('./routes/teacherRoute');
-const childrenRouter = require('./routes/childrensRoute');
+const adminRouter = require('./Routes/adminRoute');
+const teacherRouter = require('./Routes/teacherRoute');
+const childrenRouter = require('./Routes/childrensRoute');
+const swaggerDocs = require("./swagger-output.json")
 
 
 
@@ -16,6 +19,8 @@ const app = express();
 app.use(morgan("dev"));
 
 
+app.use("/api-docs",
+swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 //1) Using MiddlewWres
 app.use(express.json());

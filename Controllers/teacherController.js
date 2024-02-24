@@ -1,4 +1,9 @@
 const Teacher = require("./../models/teacherModel");
+const bcrypt = require("bcrypt");
+
+const handleErrors = (err) => {
+    console.log(err.message , err.code);
+}
 
 exports.getTeachers =  async(req , res) => {
     const teachers = await Teacher.find();
@@ -14,25 +19,9 @@ exports.registerTeacher =  async (req , res) => {
         res.status(201).json(newTeacher);
     }
     catch(err){
-        console.log(err);
+        handleErrors(err);
         res.status(400).send("error , user not created");
     }
-
-    // const teacherName = req.body.name;
-    // const teacherEmail = req.body.email;
-    // const teacherPassword = req.body.password;
-    // const teacherQualifications = req.body.qualifications;
-    // const teacherSubjects = req.body.subjects;
-
-    // newTeacher.name = teacherName;
-    // newTeacher.email = teacherEmail;
-    // newTeacher.password = teacherPassword;
-    // newTeacher.qualifications = teacherQualifications;
-    // newTeacher.subjects = teacherSubjects ;
-    
-    // await newTeacher.save();
-
-    // res.send("the new teacher has been added successfully")
 };
 
 exports.getSpecifiTeacher = async (req , res) => {
@@ -77,5 +66,36 @@ exports.updateTeacher = async (req , res) => {
         }
     } catch (error) {
         res.status(400).send('Invalid ID format');
+    }
+};
+
+
+
+exports.changeTeacherPassword = async (req, res) => {
+    const { id } = req.params; 
+    const { newPassword } = req.body; 
+
+    if (!newPassword) {
+        return res.status(400).send('New password is required');
+    }
+
+    try {
+        const teacher = await Teacher.findById(id);
+
+        if (!teacher) {
+            return res.status(404).send('Teacher not found');
+        }
+
+        const isSamePassword = await bcrypt.compare(newPassword, teacher.password);
+        if (isSamePassword) {
+            return res.status(400).send('New password must be different from the current password');
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 12);
+        await Teacher.findByIdAndUpdate(id, { password: hashedPassword });
+
+        res.status(200).send('Password updated successfully');
+    } catch (error) {
+        res.status(500).send('teacher not found');
     }
 };

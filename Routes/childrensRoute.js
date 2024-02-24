@@ -4,7 +4,10 @@ const router = express.Router();
 
 
 
-router.route("/childrens").get(childrenController.getChildrens);
-
+router.route("/childrens").get(childrenController.getChildren);
+router.post("/childrens/register" ,childrenController.registerChild );
+router.route("/childrens/:id").get(childrenController.getSpecificChild)
+                             .delete(childrenController.removeChild)
+                             .patch(childrenController.updateChild);
 
 module.exports = router;

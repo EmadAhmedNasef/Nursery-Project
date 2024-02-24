@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const {isEmail} = require("validator");
+const bcrypt = require("bcrypt");
+
 
 mongoose.connect("mongodb+srv://emadnasef86:emadnasef100@cluster0.h4jllrt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 .then(()=> {
@@ -22,15 +24,21 @@ const teacherSchema = new schema ({
         required: [true , "please enter an email"], 
         unique: true,
         lowercase : true,  
-        //validate : [isEmail , "please enter a valid email"],
+        validate : [isEmail , "please enter a valid email"],
     },
     password: { 
-        type: Number, 
+        type: String, 
         required: true ,
-        minLength : [6 , "Minimum length is 6 characters"]
+        minlength : [6 , "Minimum length is 6 numbers"]
     },
     qualifications: String,
     subjects: [String]
+});
+
+teacherSchema.pre('save', async function(next) {
+    const salt = await bcrypt.genSalt();
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
 });
 
 const Teacher = mongoose.model('Teacher', teacherSchema);
