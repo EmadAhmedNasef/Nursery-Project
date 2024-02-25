@@ -17,8 +17,22 @@ const admin = {
 
 exports.addTeacher = async (req, res) => {
     try {
+        const { email } = req.body;
+        const existingUser = await Teacher.findOne({ email }) || await Student.findOne({ email });
+
+        if (existingUser) {
+            return res.status(400).json({
+                status: 'fail',
+                message: 'Email is already in use'
+            });
+        }
+        
+        if (req.file) {
+            req.body.img = req.file.path;
+        }
+
         const newTeacher = await Teacher.create(req.body);
-        const token = jwt.sign({id: newTeacher._id}, process.env.ACCESS_TOKEN_SECRET);
+        const token = jwt.sign({ id: newTeacher._id }, process.env.ACCESS_TOKEN_SECRET);
 
         res.status(201).json({
             status: 'success',
@@ -37,12 +51,22 @@ exports.addTeacher = async (req, res) => {
 
 exports.addChild = async (req, res) => {
     try {
+        const { email } = req.body;
+        const existingUser = await Teacher.findOne({ email }) || await Student.findOne({ email });
+
+        if (existingUser) {
+            return res.status(400).json({
+                status: 'fail',
+                message: 'Email is already in use'
+            });
+        }
+
         if (req.file) {
-            req.body.profilePicture = req.file.path;
+            req.body.img = req.file.path;
         }
 
         const newStudent = await Student.create(req.body);
-        const token = jwt.sign({id: newStudent._id}, process.env.ACCESS_TOKEN_SECRET);
+        const token = jwt.sign({ id: newStudent._id }, process.env.ACCESS_TOKEN_SECRET);
 
         res.status(201).json({
             status: 'success',

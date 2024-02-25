@@ -8,7 +8,7 @@ const authController = require("./../Controllers/authController");
 
 router.patch("/updateImg" , childrenController.uploadTeacherPhoto , childrenController.getImg);
 
-router.post("/signup" ,childrenController.uploadTeacherPhoto ,authController.signUp);
+// router.post("/signup" ,childrenController.uploadTeacherPhoto ,authController.signUp);
 router.post("/login" , authController.logIn);
 
 

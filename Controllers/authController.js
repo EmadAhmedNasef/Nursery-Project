@@ -1,4 +1,5 @@
-const User = require("./../models/userModel");
+const Teacher = require("./../models/teacherModel");
+const Child = require("./../models/childrenModel");
 const multer = require("multer");
 const jwt = require("jsonwebtoken");
 
@@ -37,19 +38,19 @@ exports.uploadUserPhoto = upload.single('photo');
 
 exports.signUp = async (req, res, next) => {
     try {
-        let profilePicture;
         if (req.file) {
-            profilePicture.img = req.file.filename;
+            req.body.img = req.file.filename; 
         }
-        const newUser = await User.create(req.body); 
+        const newTeacher = await Teacher.create(req.body); 
 
-        const token = jwt.sign({id: newUser._id}, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' }); // Optionally, you can set an expiration for the token
+        // Generate a token
+        const token = jwt.sign({id: newTeacher._id}, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
 
         res.status(201).json({
             status: "Success",
             token,
             data: {
-                user: newUser
+                user: newTeacher
             }
         });
     } catch (error) {
@@ -61,32 +62,36 @@ exports.signUp = async (req, res, next) => {
 };
 
 
-exports.logIn = async (req , res , next) => {
-    const {email , password} = req.body;
-    if(!email || !password) {
-        res.status(400).json({
-            status  : 'Fail',
-            message : "please proveide email and pass",
-        })
+
+exports.logIn = async (req, res, next) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({
+            status: 'Fail',
+            message: "Please provide email and password",
+        });
     }
 
-    const user = await User.findOne({email }) 
-    
-    if(!user || !(await user.correctPassword(password , user.password))) {
-        res.status(401).json({
-            status  : 'Fail',
-            message : "user not found or pass not correct",
-        })
+    let user = await Teacher.findOne({ email });
+    let role = 'Teacher';
+
+    if (!user) {
+        user = await Child.findOne({ email });
+        role = 'Child';
     }
 
+    if (!user || !(await user.correctPassword(password, user.password))) {
+        return res.status(401).json({
+            status: 'Fail',
+            message: "Incorrect email or password",
+        });
+    }
 
+    const token = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
 
-    const token = jwt.sign({id : user._id }, process.env.ACCESS_TOKEN_SECRET);
     res.status(200).json({
-        status : "Success" ,
+        status: "Success",
         token,
-        message: `Welcome ${user.username}, you are logged in as a ${user.role}.`,
+        message: `Welcome ${user.username}, you are logged in as a ${role}.`,
     });
-
-}
-
+};
