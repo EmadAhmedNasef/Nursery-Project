@@ -1,5 +1,6 @@
 const Teacher = require("./../models/teacherModel"); 
 const Student = require("./../models/childrenModel"); 
+const jwt = require("jsonwebtoken");
 
 exports.getAdmin = (req , res) => {
     res.status(200).json({
@@ -7,26 +8,21 @@ exports.getAdmin = (req , res) => {
     });
 };
 
+
 const admin = {
     userName : "admin",
     userPass : 123456789
-}
-
-exports.login = (req, res) =>{
-    const { username, password } = req.body;
-    if (username === admin.userName && password === admin.userPass) {
-        res.status(200).json({ message: "Login successful" });
-    } else {
-        res.status(401).json({ message: "Invalid username or password" });
-    }
 }
 
 
 exports.addTeacher = async (req, res) => {
     try {
         const newTeacher = await Teacher.create(req.body);
+        const token = jwt.sign({id: newTeacher._id}, process.env.ACCESS_TOKEN_SECRET);
+
         res.status(201).json({
             status: 'success',
+            token,
             data: {
                 teacher: newTeacher
             }
@@ -41,9 +37,16 @@ exports.addTeacher = async (req, res) => {
 
 exports.addChild = async (req, res) => {
     try {
+        if (req.file) {
+            req.body.profilePicture = req.file.path;
+        }
+
         const newStudent = await Student.create(req.body);
+        const token = jwt.sign({id: newStudent._id}, process.env.ACCESS_TOKEN_SECRET);
+
         res.status(201).json({
             status: 'success',
+            token,
             data: {
                 student: newStudent
             }
@@ -52,6 +55,20 @@ exports.addChild = async (req, res) => {
         res.status(400).json({
             status: 'fail',
             message: error
+        });
+    }
+};
+
+
+exports.authenticateAdmin = (req, res, next) => {
+    const { name, pass } = req.body;
+
+    if (name === admin.userName && pass === admin.userPass) {
+        next(); 
+    } else {
+        res.status(401).json({
+            status: 'fail',
+            message: 'Unauthorized: Incorrect admin credentials'
         });
     }
 };

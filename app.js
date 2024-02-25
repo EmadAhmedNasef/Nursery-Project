@@ -1,4 +1,4 @@
-
+// const jwt = require("jsonwebtoken");
 
 const express = require("express");
 const morgan = require("morgan");
@@ -35,7 +35,12 @@ app.use(childrenRouter);
 
 
 
-
+app.all("*", (req, res, next)=>{ 
+    res.status(404).json({
+        status : "fail",
+        message : `can't find ${req.originalUrl} on this server`
+    })
+});
 
 
 

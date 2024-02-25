@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
-const {isEmail} = require("validator");
-const bcrypt = require("bcrypt");
+const User = require("./../models/userModel"); 
 
 
 mongoose.connect("mongodb+srv://emadnasef86:emadnasef100@cluster0.h4jllrt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
@@ -10,37 +9,17 @@ mongoose.connect("mongodb+srv://emadnasef86:emadnasef100@cluster0.h4jllrt.mongod
         console.log("error with that mongo" , err);
 });
 
-
-const schema = mongoose.Schema;
-
-const teacherSchema = new schema ({
-    name: { 
-        type: String, 
-        required: [true , "please enter an user name"],
-        lowercase : true,        
-    },
-    email: { 
+const teacherSchema = new mongoose.Schema({
+    qualifications: {
         type: String,
-        required: [true , "please enter an email"], 
-        unique: true,
-        lowercase : true,  
-        validate : [isEmail , "please enter a valid email"],
+        required: true
     },
-    password: { 
-        type: String, 
-        required: true ,
-        minlength : [6 , "Minimum length is 6 numbers"]
-    },
-    qualifications: String,
-    subjects: [String]
+    subjects: {
+        type: [String],
+        required: true
+    }
 });
 
-teacherSchema.pre('save', async function(next) {
-    const salt = await bcrypt.genSalt();
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-});
-
-const Teacher = mongoose.model('Teacher', teacherSchema);
+const Teacher = User.discriminator('Teacher', teacherSchema);
 
 module.exports = Teacher;
