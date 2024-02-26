@@ -7,6 +7,7 @@ const swaggerUi = require("swagger-ui-express");
 const adminRouter = require('./Routes/adminRoute');
 const teacherRouter = require('./Routes/teacherRoute');
 const childrenRouter = require('./Routes/childrensRoute');
+const classRoute = require('./Routes/classRoute');
 const swaggerDocs = require("./swagger-output.json")
 
 
@@ -31,6 +32,7 @@ app.use(express.json());
 app.use(adminRouter);
 app.use(teacherRouter);
 app.use(childrenRouter);
+app.use(classRoute);
 
 
 
