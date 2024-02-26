@@ -9,10 +9,10 @@ exports.getAdmin = (req , res) => {
 };
 
 
-const admin = {
-    userName : "admin",
-    userPass : 123456789
-}
+// const admin = {
+//     userName : "admin",
+//     userPass : 123456789
+// }
 
 
 exports.addTeacher = async (req, res) => {

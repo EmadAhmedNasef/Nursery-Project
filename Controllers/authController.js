@@ -2,8 +2,7 @@ const Teacher = require("./../models/teacherModel");
 const Child = require("./../models/childrenModel");
 const multer = require("multer");
 const jwt = require("jsonwebtoken");
-
-
+const admin = { userName: 'admin@admin.com', userPass: 'adminPassword' };
 
 const multerStorage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -42,8 +41,6 @@ exports.signUp = async (req, res, next) => {
             req.body.img = req.file.filename; 
         }
         const newTeacher = await Teacher.create(req.body); 
-
-        // Generate a token
         const token = jwt.sign({id: newTeacher._id}, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
 
         res.status(201).json({
@@ -62,9 +59,20 @@ exports.signUp = async (req, res, next) => {
 };
 
 
-
-exports.logIn = async (req, res, next) => {
+exports.logIn = async (req, res) => {
     const { email, password } = req.body;
+
+    
+    if (email === admin.userName && password === admin.userPass) {
+        const token = jwt.sign({ role: 'Admin' }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+        return res.status(200).json({
+            status: "Success",
+            token,
+            message: `Welcome ${admin.userName}, you are logged in as Admin.`,
+        });
+    }
+
+   
     if (!email || !password) {
         return res.status(400).json({
             status: 'Fail',
@@ -72,22 +80,25 @@ exports.logIn = async (req, res, next) => {
         });
     }
 
-    let user = await Teacher.findOne({ email });
+   
+    let user = await Teacher.findOne({ email }).exec();
     let role = 'Teacher';
 
     if (!user) {
-        user = await Child.findOne({ email });
+        user = await Child.findOne({ email }).exec();
         role = 'Child';
     }
 
-    if (!user || !(await user.correctPassword(password, user.password))) {
+    
+    if (!user || !(await user.correctPassword(password))) {
         return res.status(401).json({
             status: 'Fail',
             message: "Incorrect email or password",
         });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+   
+    const token = jwt.sign({ id: user._id, role: role }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
 
     res.status(200).json({
         status: "Success",
